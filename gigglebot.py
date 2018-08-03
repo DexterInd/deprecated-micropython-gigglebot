@@ -21,6 +21,9 @@ DEFAULT_MOTOR_POWER_LEFT = 50
 DEFAULT_MOTOR_POWER_RIGHT = 50
 DEFAULT_EYE_COLOR = (0, 0, 10)
 LOW_VOLTAGE_EYE_COLOR = (10, 0, 0)
+motor_power_left = DEFAULT_MOTOR_POWER_LEFT
+motor_power_right = DEFAULT_MOTOR_POWER_RIGHT
+
 
 def _write8(*args, repeat=False):
     buf = bytearray(len(args))
@@ -29,35 +32,41 @@ def _write8(*args, repeat=False):
         buf[i] = (args[i] & 0xFF)
     microbit.i2c.write(0x04, bytes(buf), repeat) 
 
+
 def _read8(reg, repeat=False):
     microbit.i2c.write(0x04, bytes([reg]), repeat)
     outbuf = microbit.i2c.read(0x04, 1, repeat)
     return_value = outbuf[0]
     return return_value
 
+
 def _read16(reg, repeat=False):
     microbit.i2c.write(0x04, bytes([reg]), repeat)
     outbuf = microbit.i2c.read(0x04, 2, repeat)
     return_value = outbuf[0] * 255 + outbuf[1]
     return return_value
-    
+
+
 def _get_sensors(reg, repeat=False):
     microbit.i2c.write(0x04, bytes([reg]), repeat)
     outbuf = []
     buf = microbit.i2c.read(0x04, 3, repeat)
     outbuf.append(1023 - ( buf[0] << 2 | ((buf[2] & 0xC0) >> 6)))
-    outbuf.append(1023 - ( buf[1] << 2 | (((buf[2] << 2) & 0xC0) >> 6)))
+    outbuf.append(1023 - ( buf[1] << 2 | ((buf[2] & 0x30) >> 4)))
     return outbuf
-        
+
+
 def volt():
     return _read16(I2C_GET_VOLTAGE_BATTERY)
-        
+
+
 def drive(dir=FORWARD, seconds=-1):
     _write8(I2C_SET_MOTOR_POWERS, motor_power_left*dir, motor_power_right*dir)
     if seconds > 0:
         time.sleep(seconds)
         stop()
-            
+
+
 def turn(dir=LEFT, seconds=-1):
     if dir==LEFT:
         _write8(I2C_SET_MOTOR_POWERS, motor_power_left, 0)
@@ -66,14 +75,18 @@ def turn(dir=LEFT, seconds=-1):
     if seconds > 0:
         time.sleep(seconds)
         stop()        
-    
-def speed(power_left, power_right):
+
+
+def set_speed(power_left, power_right):
+    global motor_power_left, motor_power_right
     motor_power_left = power_left
     motor_power_right = power_right
 
+
 def stop():
         _write8(I2C_SET_MOTOR_POWERS, 0, 0)
-        
+
+
 def smile(R=25,G=0,B=0):
     '''
     Like all neopixel methods, this may return a ValueError if the colors are invalid
@@ -81,7 +94,8 @@ def smile(R=25,G=0,B=0):
     for i in range(2,9):
         neopixelstrip[i] = (R,G,B)
     neopixelstrip.show()
-        
+
+
 def eyes(which=BOTH, R=0, G=0, B=10):
     '''
     Like all neopixel methods, this may return a ValueError if the colors are invalid
@@ -91,28 +105,34 @@ def eyes(which=BOTH, R=0, G=0, B=10):
     if which != RIGHT:
         neopixelstrip[1]= (R,G,B)
     neopixelstrip.show()
-        
+
 
 def set_eye_color_on_start():
     if volt() < 4000:
         neopixelstrip[0] = LOW_VOLTAGE_EYE_COLOR
         neopixelstrip[1]= LOW_VOLTAGE_EYE_COLOR
-
     else:
         neopixelstrip[0] = DEFAULT_EYE_COLOR
         neopixelstrip[1]= DEFAULT_EYE_COLOR
-        
-def light_sensor(which):
-    if (which == LEFT):
-        return _get_sensors(I2C_GET_LINE_SENSORS)[0]
-    elif (which == RIGHT):
-        return _get_sensors(I2C_GET_LINE_SENSORS)[1]
+    neopixelstrip.show()
+
+
+def read_sensors(which_sensor, which_side):
+    if (which_side == LEFT):
+        return _get_sensors(which_sensor)[0]
+    elif (which_side == RIGHT):
+        return _get_sensors(which_sensor)[1]
     else:
-        return _get_sensors(I2C_GET_LINE_SENSORS)
-    
-neopixelstrip = neopixel.NeoPixel(microbit.pin8, 9)
-# set_eye_color_on_start()
-# neopixelstrip.show()
-motor_power_left = DEFAULT_MOTOR_POWER_LEFT
-motor_power_right = DEFAULT_MOTOR_POWER_RIGHT
+        return _get_sensors(which_sensor)
+
+
+def light_sensor(which):
+    return read_sensors(I2C_GET_LIGHT_SENSORS, which)
+
+
+def line_sensor(which):
+    return read_sensors(I2C_GET_LINE_SENSORS, which)
+  
 stop()
+neopixelstrip = neopixel.NeoPixel(microbit.pin8, 9)
+set_eye_color_on_start()

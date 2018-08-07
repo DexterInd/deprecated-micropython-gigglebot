@@ -74,18 +74,26 @@ def set_speed(power_left, power_right):
 def stop():
         _write8(I2C_SET_MOTOR_POWERS, 0, 0)
 
-def set_servo(which, angle):
+def set_servo(which, degrees):
     '''
-    Will set the left/right servo to a value between 10 and 170
-    Not between 0 and 180 to avoid burning some servos.
-    if angle is set to -1, then power will be removed from servo and it will be left floating
+    Will set the left/right servo to a value between 0 and 180
     '''
-    angle = 0 if angle == -1 else max(min(angle, 170), 10)
+    degrees = degrees % 360
+    us = min(2400, max(600, 600 + 1800 * degrees // 180))
+    duty = round(us * 1024 * 50 // 1000000)
     if which == LEFT or which == BOTH:
-        microbit.pin14.write_analog(angle)
+        microbit.pin14.set_analog_period(20)
+        microbit.pin14.write_analog(duty)
     if which == RIGHT or which == BOTH:
-        microbit.pin13.write_analog(angle)
+        microbit.pin13.set_analog_period(20)
+        microbit.pin13.write_analog(duty)
         
+def servo_off(which):
+    if which == LEFT or which == BOTH:
+        microbit.pin14.write_digital(0)
+    if which == RIGHT or which == BOTH:
+        microbit.pin13.write_digital(0)
+    
 def set_smile(R=25,G=0,B=0):
     '''
     Like all neopixel methods, this may return a ValueError if the colors are invalid
@@ -128,6 +136,6 @@ def pixels_off():
   
 stop()
 neopixelstrip = neopixel.NeoPixel(microbit.pin8, 9)
-no_pixels()
+pixels_off()
 eyestrip = neopixel.NeoPixel(microbit.pin8, 2)
 set_eye_color_on_start()

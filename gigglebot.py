@@ -78,7 +78,6 @@ def set_servo(which, degrees):
     '''
     Will set the left/right servo to a value between 0 and 180
     '''
-    degrees = degrees % 360
     us = min(2400, max(600, 600 + 1800 * degrees // 180))
     duty = round(us * 1024 * 50 // 1000000)
     if which == LEFT or which == BOTH:

@@ -49,11 +49,11 @@ def _get_sensors(reg, repeat=False):
     return outbuf
 
 def volt():
-    return _read16(I2C_GET_VOLTAGE_BATTERY)
+    return (_read16(I2C_GET_VOLTAGE_BATTERY)/1000)
 
 def drive(dir=FORWARD, seconds=-1):
     _write8(I2C_SET_MOTOR_POWERS, motor_power_left*dir, motor_power_right*dir)
-    if seconds > 0:
+    if seconds >= 0:
         time.sleep(seconds)
         stop()
 
@@ -62,7 +62,7 @@ def turn(dir=LEFT, seconds=-1):
         _write8(I2C_SET_MOTOR_POWERS, motor_power_left, 0)
     if dir==RIGHT:
         _write8(I2C_SET_MOTOR_POWERS, 0, motor_power_right)
-    if seconds > 0:
+    if seconds >= 0:
         time.sleep(seconds)
         stop()        
 
@@ -78,7 +78,7 @@ def set_servo(which, degrees):
     '''
     Will set the left/right servo to a value between 0 and 180
     '''
-    us = min(2400, max(600, 600 + 1800 * degrees // 180))
+    us = min(2400, max(600, 600 + (1800 * degrees // 180)))
     duty = round(us * 1024 * 50 // 1000000)
     if which == LEFT or which == BOTH:
         microbit.pin14.set_analog_period(20)

@@ -1,17 +1,16 @@
 import neopixel
 import microbit
-import time
 
-I2C_GET_FIRMWARE_VERSION = 1
-# I2C_GET_MANUFACTURER = 2
-I2C_GET_BOARD = 3
-I2C_GET_VOLTAGE_BATTERY = 4
-I2C_GET_LINE_SENSORS = 5
-I2C_GET_LIGHT_SENSORS = 6
-# I2C_GET_MOTOR_STATUS_RIGHT = 7
-# I2C_GET_MOTOR_STATUS_LEFT = 8
-# I2C_SET_MOTOR_POWER = 9
-I2C_SET_MOTOR_POWERS = 10
+GET_FIRMWARE_VERSION = 1
+# GET_MANUFACTURER = 2
+GET_BOARD = 3
+GET_VOLTAGE_BATTERY = 4
+GET_LINE_SENSORS = 5
+GET_LIGHT_SENSORS = 6
+# GET_MOTOR_STATUS_RIGHT = 7
+# GET_MOTOR_STATUS_LEFT = 8
+# SET_MOTOR_POWER = 9
+SET_MOTOR_POWERS = 10
 LEFT = 0
 RIGHT = 1
 BOTH = 2
@@ -49,21 +48,21 @@ def _get_sensors(reg, repeat=False):
     return outbuf
 
 def volt():
-    return (_read16(I2C_GET_VOLTAGE_BATTERY)/1000)
+    return (_read16(GET_VOLTAGE_BATTERY)/1000)
 
-def drive(dir=FORWARD, seconds=-1):
-    _write8(I2C_SET_MOTOR_POWERS, motor_power_left*dir, motor_power_right*dir)
-    if seconds >= 0:
-        time.sleep(seconds)
+def drive(dir=FORWARD, milliseconds=-1):
+    _write8(SET_MOTOR_POWERS, motor_power_left*dir, motor_power_right*dir)
+    if milliseconds >= 0:
+        microbit.sleep(milliseconds)
         stop()
 
-def turn(dir=LEFT, seconds=-1):
+def turn(dir=LEFT, milliseconds=-1):
     if dir==LEFT:
-        _write8(I2C_SET_MOTOR_POWERS, motor_power_left, 0)
+        _write8(SET_MOTOR_POWERS, motor_power_left, 0)
     if dir==RIGHT:
-        _write8(I2C_SET_MOTOR_POWERS, 0, motor_power_right)
-    if seconds >= 0:
-        time.sleep(seconds)
+        _write8(SET_MOTOR_POWERS, 0, motor_power_right)
+    if milliseconds >= 0:
+        microbit.sleep(milliseconds)
         stop()        
 
 def set_speed(power_left, power_right):
@@ -72,7 +71,7 @@ def set_speed(power_left, power_right):
     motor_power_right = power_right
 
 def stop():
-        _write8(I2C_SET_MOTOR_POWERS, 0, 0)
+        _write8(SET_MOTOR_POWERS, 0, 0)
 
 def set_servo(which, degrees):
     '''
@@ -112,7 +111,7 @@ def set_eyes(which=BOTH, R=0, G=0, B=10):
     neopixelstrip.show()
 
 def set_eye_color_on_start():
-    if _read16(I2C_GET_VOLTAGE_BATTERY) < 3400:
+    if _read16(GET_VOLTAGE_BATTERY) < 3400:
         neopixelstrip[0] = LOW_VOLTAGE_EYE_COLOR
         neopixelstrip[1]= LOW_VOLTAGE_EYE_COLOR
     else:
@@ -120,7 +119,7 @@ def set_eye_color_on_start():
         neopixelstrip[1]= DEFAULT_EYE_COLOR
     neopixelstrip.show()
 
-def read_sensors(which_sensor, which_side):
+def read_sensor(which_sensor, which_side):
     if (which_side == LEFT):
         return _get_sensors(which_sensor)[0]
     elif (which_side == RIGHT):

@@ -15,13 +15,7 @@ FORWARD = const(1)
 BACKWARD = const(-1)
 motor_power_left = 50
 motor_power_right = 50
-
-def _write8(*args, repeat=False):
-  buf = bytearray(len(args))
-  buf[0] = args[0]
-  for i in range(1, len(args)):
-    buf[i] = (args[i] & 0xFF)
-  microbit.i2c.write(0x04, bytes(buf), repeat) 
+neopixelstrip = None
 
 def _read(reg, size=8, repeat=False):
   microbit.i2c.write(0x04, bytes([reg]), repeat)
@@ -37,17 +31,17 @@ def _get_sensors(reg, repeat=False):
   return outbuf
 
 def volt():
-  return (_read16(GET_VOLTAGE_BATTERY, size=16)/1000)
+  return (_read(GET_VOLTAGE_BATTERY, size=16)/1000)
 
 def drive(dir=FORWARD, milliseconds=-1):
-  _write8(SET_MOTOR_POWERS, motor_power_left*dir, motor_power_right*dir)
+  microbit.i2c.write(0x04, bytes([SET_MOTOR_POWERS, motor_power_left*dir, motor_power_right*dir]), False)
   if milliseconds >= 0:
     microbit.sleep(milliseconds)
     stop()
 
 def turn(dir=LEFT, milliseconds=-1):
-  if dir==LEFT: _write8(SET_MOTOR_POWERS, motor_power_left, 0)
-  if dir==RIGHT: _write8(SET_MOTOR_POWERS, 0, motor_power_right)
+  if dir==LEFT: microbit.i2c.write(0x04, bytes([SET_MOTOR_POWERS, motor_power_left, 0]), False)
+  if dir==RIGHT: microbit.i2c.write(0x04, bytes([SET_MOTOR_POWERS, 0, motor_power_right]), False)
   if milliseconds >= 0:
     microbit.sleep(milliseconds)
     stop()        
@@ -58,7 +52,7 @@ def set_speed(power_left, power_right):
   motor_power_right = power_right
 
 def stop():
-  _write8(SET_MOTOR_POWERS, 0, 0)
+  microbit.i2c.write(0x04, bytes([SET_MOTOR_POWERS, 0, 0]), False)
 
 def set_servo(which, degrees):
   us = min(2400, max(600, 600 + (1800 * degrees // 180)))
@@ -87,7 +81,7 @@ def set_eyes(which=BOTH, R=0, G=0, B=10):
   neopixelstrip.show()
 
 def set_eye_color_on_start():
-  if _read16(GET_VOLTAGE_BATTERY, size=16) < 3400:
+  if _read(GET_VOLTAGE_BATTERY, size=16) < 3400:
     neopixelstrip[0] = (10, 0, 0)
     neopixelstrip[1]= (10, 0, 0)
   else:
@@ -106,6 +100,7 @@ def pixels_off():
   neopixelstrip.show()
  
 def init(): 
+  global neopixelstrip
   stop()
   neopixelstrip = const(NeoPixel(microbit.pin8, 9)); pixels_off()
   eyestrip = const(NeoPixel(microbit.pin8, 2))

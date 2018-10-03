@@ -20,12 +20,12 @@ motor_power_right = 50
 #: neopixel variable to control all neopixels. There are 9 neopixels on the Gigglebot. Pixel 0 is the right eye, pixel 1 is the left eye. Pixel 2 is the first of the rainbow pixel, on the right side. In order to control the neopixels, you must call :py:meth:`~init()` beforehand.
 neopixelstrip = None
 
+#: I2C command to read the line sensors.
+GET_LINE_SENSORS = 5
+#: I2C command to read the light sensors.
+GET_LIGHT_SENSORS = 6
 #: I2C command to query voltage level of the battery.
 _GET_VOLTAGE_BATTERY = 4
-#: I2C command to read the line sensors.
-_GET_LINE_SENSORS = 5
-#: I2C command to read the light sensors.
-_GET_LIGHT_SENSORS = 6
 #: I2C command to write new power values to the motor.
 _SET_MOTOR_POWERS = 10
 
@@ -60,27 +60,56 @@ def drive(dir=FORWARD, milliseconds=-1):
     '''
     This results in the Gigglebot driving FORWARD or BACKWARD. 
 
+    The following snippet of code will see the gigglebot drive forward for a second:
+
+        .. code-block:: python
+
+            from gigglebot import *
+            drive(FORWARD, 1000)
+    
+    And this snippet of code will do the same thing:
+
+        .. code-block:: python
+
+            import gigglebot
+            gigglebot.drive(gigglebot.FORWARD, 1000)
+
     :param int dir = FORWARD: Possible values are FORWARD (1) or BACKWARD (-1). Please note there are no tests done on this value. One could theoretically use 2 to double the speed.
     :param int milliseconds = -1: If this parameter is omitted, or a negative value is supplied, the robot will keep on going until told to do something else, like turning or stopping. If a positive value is supplied, the robot will drive for that quantity of milliseconds.
     '''
-    microbit.i2c.write(0x04, bytes([_SET_MOTOR_POWERS, motor_power_left*dir, motor_power_right*dir]), False)
+    microbit.i2c.write(0x04, bytes([_SET_MOTOR_POWERS, int(motor_power_left*dir) & 0xFF, int(motor_power_right*dir) & 0xFF]), False)
     if milliseconds >= 0:
         microbit.sleep(milliseconds)
         stop()
 
 def turn(dir=LEFT, milliseconds=-1):
-    if dir==LEFT: microbit.i2c.write(0x04, bytes([_SET_MOTOR_POWERS, motor_power_left, 0]), False)
-    if dir==RIGHT: microbit.i2c.write(0x04, bytes([_SET_MOTOR_POWERS, 0, motor_power_right]), False)
+    """
+    Will get the gigglebot to turn left or right by temporarily removing power to one wheel.
+
+    :param int dir=LEFT: Either LEFT (0) or RIGHT (1) to determine the direction of the turn.
+    :param int milliseconds=-1: If this parameter is omitted, or a negative value is supplied, the robot will keep on going until told to do something else, like turning or stopping. If a positive value is supplied, the robot will drive for that quantity of milliseconds.
+    """
+    if dir==LEFT: microbit.i2c.write(0x04, bytes([_SET_MOTOR_POWERS, int(motor_power_left) & 0xFF, 0]), False)
+    if dir==RIGHT: microbit.i2c.write(0x04, bytes([_SET_MOTOR_POWERS, 0, int(motor_power_right) & 0xFF]), False)
     if milliseconds >= 0:
         microbit.sleep(milliseconds)
         stop()        
 
 def set_speed(power_left, power_right):
+    """
+    Assigns left and right motor powers. If both are the same speed, the GiggleBot will go mostly straight.
+
+    .. note::
+       It is possible that the GiggleBot does not go straight by default. If so, you need to adjust the speed of each motor to correct the course of the robot.
+    """
     global motor_power_left, motor_power_right
     motor_power_left = power_left
     motor_power_right = power_right
 
 def stop():
+    """
+    Stops the GiggleBot right away.
+    """
     microbit.i2c.write(0x04, bytes([_SET_MOTOR_POWERS, 0, 0]), False)
 
 def set_smile(R=25,G=0,B=0):
@@ -110,6 +139,11 @@ def set_eyes(which=BOTH, R=0, G=0, B=10):
     neopixelstrip.show()
 
 def set_eye_color_on_start():
+    """
+    Sets the eye color to blue if the batteries are good, to red if the batteries are running low.
+    This is called by the :py:meth:`~init()`, usually at the start of the program.
+    You are free to call this method whenever you want if you need to keep a closer watch on the voltage level.
+    """
     if _read(_GET_VOLTAGE_BATTERY, size=16) < 3400:
         neopixelstrip[0]=(10, 0, 0)
         neopixelstrip[1]=(10, 0, 0)
@@ -120,13 +154,33 @@ def set_eye_color_on_start():
 
 def pixels_off():
     """
-
+    Turns all neopixels off, both eyes and smile.
     """
     for i in range(9):
         neopixelstrip[i] = (0,0,0)
     neopixelstrip.show()
 
-def set_servo(which, degrees):
+def set_servo(which=LEFT, degrees=90):
+    """
+    :param int which: Which servo to control: LEFT (0),  RIGHT (1), or BOTH (2)
+    :param int degrees: Position of the servo, from 0 to 180. 
+
+    .. note::
+
+       Moving the servo is not instantaneous. It is possible that you will need to give it time to reach its final position.
+
+       The following is an example that will get the servo moving from 0 to 180 degrees every second.
+
+       .. code::
+
+          from gigglebot import *
+          import microbit
+          while True:
+              set_servo(BOTH, 0)
+              microbit.sleep(1000) # sleeps for 1000 milliseconds
+              set_servo(BOTH, 180)
+              microbit.sleep(1000) # sleeps for 1000 milliseconds
+    """
     us = min(2400, max(600, 600 + (1800 * degrees // 180)))
     duty = round(us * 1024 * 50 // 1000000)
     if which == LEFT or which == BOTH:
@@ -137,15 +191,34 @@ def set_servo(which, degrees):
         microbit.pin13.write_analog(duty)
         
 def servo_off(which):
+    """
+    Removes power from the servo.
+
+    :param int which: determines which servo, LEFT (0), RIGHT (1), BOTH (2)
+    """
     if which == LEFT or which == BOTH: microbit.pin14.write_digital(0)
     if which == RIGHT or which == BOTH: microbit.pin13.write_digital(0)
     
 
 def read_sensor(which_sensor, which_side):
+    """
+    Reads the GiggleBot onboard sensors, light or line sensors.
+
+    :param int which_sensor: reads the light sensors GET_LIGHT_SENSORS (6), or the line sensors GET_LINE_SENSORS (5). Values are from 0 to 1023.
+    :param int which_side: reads LEFT (0), RIGHT (1), or BOTH (2) sensors. When reading both sensors, an array will be returned.
+
+    :returns: either an integer or an array of integers.
+
+    """
     if (which_side == LEFT): return _get_sensors(which_sensor)[0]
     elif (which_side == RIGHT): return _get_sensors(which_sensor)[1]
     else: return _get_sensors(which_sensor)
 
 
 def volt():
+    """
+    Returns the voltage level of the batteries
+
+    :returns: voltage level of the batteries.
+    """
     return (_read(_GET_VOLTAGE_BATTERY, size=16)/1000)

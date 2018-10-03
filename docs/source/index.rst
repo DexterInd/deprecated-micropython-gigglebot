@@ -8,6 +8,9 @@ Welcome to the GiggleBot Micropython Library's documentation!
 
 This library is meant to be used with the `Mu editor <https://codewith.mu/>`_ , a `Micro:bit <https://https://microbit.org/>`_, and `GiggleBot <https://gigglebot.io>`_.
 
+.. figure::  _static/images/GiggleBot-Line_Follower_900x.jpg
+   :align:   center
+
 For step by step installation instructions and how to get started, please see the main `GiggleBot website <https://www.gigglebot.io/pages/program-the-gigglebot-robot-micropython>`_
 
 

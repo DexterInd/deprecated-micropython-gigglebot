@@ -3,15 +3,21 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to Gigglebot Micropython Library's documentation!
-=========================================================
+Welcome to the GiggleBot Micropython Library's documentation!
+=============================================================
+
+This library is meant to be used with the `Mu editor <https://codewith.mu/>`_ , a `Micro:bit <https://https://microbit.org/>`_, and `GiggleBot <https://gigglebot.io>`_.
+
+For step by step installation instructions and how to get started, please see the main `GiggleBot website <https://www.gigglebot.io/pages/program-the-gigglebot-robot-micropython>`_
+
+
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
-   code
    tutorial
+   code
 
 
 
@@ -19,5 +25,4 @@ Indices and tables
 ==================
 
 * :ref:`genindex`
-* :ref:`modindex`
 * :ref:`search`

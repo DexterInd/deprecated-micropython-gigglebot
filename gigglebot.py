@@ -84,4 +84,3 @@ def read_sensor(which_sensor,which_side):
  else:return _get_sensors(which_sensor)
 def volt():
  return(_read(_GET_VOLTAGE_BATTERY,size=16)/1000)
-

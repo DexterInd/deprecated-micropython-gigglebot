@@ -14,12 +14,15 @@
 #
 import os
 import sys
-from pathlib import Path
+
 from shutil import copy
 sys.path.insert(0, os.path.abspath('.'))
 sys.path.insert(0, os.path.abspath('..'))
-print(str(Path.cwd()))
-copy( str(Path('../../gigglebot_with_docs.py')) , str(Path('../gigglebot.py')))
+
+if os.environ.get('READTHEDOCS') == 'True':
+    copy( '../../gigglebot_with_docs.py' , '../gigglebot.py')
+else:
+    copy( '..\\..\\gigglebot_with_docs.py' , '..\\gigglebot.py')
 
 # from mock import Mock as MagicMock
 # class Mock(MagicMock):

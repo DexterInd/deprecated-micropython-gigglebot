@@ -49,12 +49,15 @@ def init():
     .. important::
         It is possible to use the Gigglebot without calling this method but the leds will not work.
         Should you need more RAM space, you can choose to ignore the neopixels.
+    
+    :returns: the neopixel strip 
     """
     from neopixel import NeoPixel
     global neopixelstrip
     stop()
     neopixelstrip = NeoPixel(microbit.pin8, 9); pixels_off()
     set_eye_color_on_start()
+    return neopixelstrip
 
 def drive(dir=FORWARD, milliseconds=-1):
     '''

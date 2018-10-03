@@ -54,5 +54,68 @@ Let's use the Neopixels to turn the smile leds to a nice red, followed by green 
 Rainbow Smile
 ^^^^^^^^^^^^^
 
-You are not limited to the basic red,green,blue colors as they can be mixed. Let's create a rainbow of colors!
+You are not limited to the basic red,green,blue colors as they can be mixed. Let's create a rainbow of colors! 
+The :py:meth:`~gigglebot.init()` method returns a variable that lets you control each neopixel individually. 
+We'll make use of this to create a rainbow.
+
+.. code::
+
+   from gigglebot import *
+   strip=init()
+   strip[2]=(255,0,0)
+   strip[2]=(248,12,18)
+   strip[3]=(255,68,34)
+   strip[4]=(255,153,51)
+   strip[5]=(208,195,16)
+   strip[6]=(34,204,170)
+   strip[7]=(51,17,187)
+   strip[8]=(68, 34, 153)
+   strip.show()
+
+
+Rainbow Cycle
+^^^^^^^^^^^^^
+
+Here is how you can get the smile to cycle through the colours of the rainbow.
+
+.. code::
+
+   from gigglebot import *
+
+   # first define the colors of the rainbow in an array
+   colors = []
+   colors.append((255,0,0))
+   colors.append((248,12,18))
+   colors.append((255,68,34))
+   colors.append((255,153,51))
+   colors.append((208,195,16))
+   colors.append((34,204,170))
+   colors.append((51,17,187))
+   colors.append((68, 34, 153))
+
+   strip=init()
+
+   # offset will let us know which colour is due to be displayed on which LED
+   offset = 0
+
+   # Looping forever
+   while True:
+       offset = offset + 1
+
+       # we might run into an issue of trying to display color 8 - which doesn't exist - on LED 7
+       # we need to catch that case before it crashes the code.
+       if offset > 7:
+           offset = 0
+       for i in range(7):
+           if i+offset > 7: 
+               colind = i+offset-7
+           else:
+               colind = i+offset
+           strip[i+2]=colors[colind]
+       # display the colors 
+       strip.show()
+       # wait a bit for the human eye to catch the colors in question
+       microbit.sleep(100)
+   # colors were taken from http://colrd.com/palette/22198/?download=css
+
 

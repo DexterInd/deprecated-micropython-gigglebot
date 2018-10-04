@@ -13,6 +13,7 @@ This library is meant to be used with the `Mu editor <https://codewith.mu/>`_ , 
 
 For step by step installation instructions and how to get started, please see the main `GiggleBot website <https://www.gigglebot.io/pages/program-the-gigglebot-robot-micropython>`_
 
+For an introduction to MicroPython on the Micro:Bit, see the `official tutorial <https://microbit-micropython.readthedocs.io/en/latest/index.html>`_.
 
 
 .. toctree::
@@ -20,6 +21,7 @@ For step by step installation instructions and how to get started, please see th
    :caption: Contents:
 
    tutorial
+   sensors
    code
 
 

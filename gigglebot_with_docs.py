@@ -21,9 +21,9 @@ motor_power_right = 50
 neopixelstrip = None
 
 #: I2C command to read the line sensors.
-GET_LINE_SENSORS = 5
+LINE_SENSOR = 5
 #: I2C command to read the light sensors.
-GET_LIGHT_SENSORS = 6
+LIGHT_SENSOR = 6
 #: I2C command to query voltage level of the battery.
 _GET_VOLTAGE_BATTERY = 4
 #: I2C command to write new power values to the motor.
@@ -207,15 +207,22 @@ def read_sensor(which_sensor, which_side):
     """
     Reads the GiggleBot onboard sensors, light or line sensors.
 
-    :param int which_sensor: reads the light sensors GET_LIGHT_SENSORS (6), or the line sensors GET_LINE_SENSORS (5). Values are from 0 to 1023.
+    :param int which_sensor: reads the light sensors LIGHT_SENSOR (6), or the line sensors LINE_SENSOR (5). Values are from 0 to 1023.
     :param int which_side: reads LEFT (0), RIGHT (1), or BOTH (2) sensors. When reading both sensors, an array will be returned.
 
-    :returns: either an integer or an array of integers.
+    :returns: either an integer or an array of integers (left, then right)
+
+    You can read the sensors this way:
+
+    .. code::
+
+       left, right = read_sensor(LIGHT_SENSOR, BOTH)
 
     """
-    if (which_side == LEFT): return _get_sensors(which_sensor)[0]
-    elif (which_side == RIGHT): return _get_sensors(which_sensor)[1]
-    else: return _get_sensors(which_sensor)
+    right, left = _get_sensors(which_sensor)
+    if(which_side==LEFT): return left
+    elif(which_side==RIGHT): return right
+    else: return (left, right)
 
 
 def volt():

@@ -7,8 +7,8 @@ BACKWARD=-1
 motor_power_left=50
 motor_power_right=50
 neopixelstrip=None
-GET_LINE_SENSORS=5
-GET_LIGHT_SENSORS=6
+LINE_SENSOR=5
+LIGHT_SENSOR=6
 _GET_VOLTAGE_BATTERY=4
 _SET_MOTOR_POWERS=10
 def _read(reg,size=8,repeat=False):
@@ -79,8 +79,11 @@ def servo_off(which):
  if which==LEFT or which==BOTH:microbit.pin14.write_digital(0)
  if which==RIGHT or which==BOTH:microbit.pin13.write_digital(0)
 def read_sensor(which_sensor,which_side):
- if(which_side==LEFT):return _get_sensors(which_sensor)[0]
- elif(which_side==RIGHT):return _get_sensors(which_sensor)[1]
- else:return _get_sensors(which_sensor)
+ right,left=_get_sensors(which_sensor)
+ if(which_side==LEFT):return left
+ elif(which_side==RIGHT):return right
+ else:return(left,right)
 def volt():
  return(_read(_GET_VOLTAGE_BATTERY,size=16)/1000)
+# Created by pyminifier (https://github.com/liftoff/pyminifier)
+

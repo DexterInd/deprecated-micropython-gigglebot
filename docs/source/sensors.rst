@@ -124,3 +124,115 @@ You could detect when it gets dark or bright. Imagine the GiggleBot inside your
 closet. When someone opens the door, the sudden light can be detected. The GiggleBot 
 can let you know someone went through your things while you were away.
 
+Line Sensors
+------------
+
+In front of GiggleBot, attached to the body, there is a line follower sensor. 
+It contains two line sensors. You can spot them from the top of the line 
+follower by two white dots. And from the bottom, they are identified as *R* and 
+*L* (for *right* and *left*)
+
+The easiest way of reading the sensors is as follow:
+
+.. code:
+   left, right = read_sensor(LINE_SENSOR, BOTH)
+
+The lower the number, the darker it is reading. Values can go from 0 to 1023 
+and depend a lot on your environment. If you want to write a line follower 
+robot, it is best to take a few readings first, to get a good idea of what
+numbers will represent a black line, and what numbers represent a white line.
+
+Calibrating the line follower
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Calibrating the line follower means figuring out which numbers get returned
+when it's over a black line, so that you can later code an actual line
+follower robot. 
+
+The best approach for this is to get readings in various parts of your line, 
+from both sensors, for both the black line and the background color.
+
+The following code will display the values onto the microbit leds when you 
+press button A, allowing you to manually position your robot around your 
+circuit and take readings.
+
+.. code:
+   from gigglebot import *
+   # reset all previous readings of button_a
+   # strictly speaking this is not necessary 
+   # it is just a safety thing
+   microbit.button_a.was_pressed()
+   while True:
+       if microbit.button_a.is_pressed():
+           left, right = read_sensor(LINE_SENSOR, BOTH)
+           microbit.display.scroll(left)
+           microbit.display.scroll(right)
+
+Follow the Line
+^^^^^^^^^^^^^^^
+
+Once you have gotten readings from the line sensors, you are ready to code
+a line follower robot. 
+
+Here we are coding for a line that is thick enough that both sensors can 
+potentially be over the line. The robot will stop if it loses track of the line, 
+in other words, if both sensors detect they're over the background color.
+
+The logic will be as follow:
+
+#. if both sensors detect a black line, forge straight ahead.
+#. if neither sensor detects a black line, give up and stop.
+#. if the right sensor detects a black line but not the left sensor, then steer to the right.
+#. if the left sensor detects a black line but not the right sensor, then steer to the left.
+
+.. code:
+   from gigglebot import *
+   # reset all previous readings of button_a
+   # strictly speaking this is not necessary 
+   # it is just a safety thing
+   microbit.button_a.was_pressed()
+   microbit.display.show(microbit.Image.YES)
+   strip=init()
+   # speed needs to be set according to your line and battery level
+   set_speed(60, 60)
+   # threshold is a little over the highest number you got that indicates a 
+   # black line.
+   threshold = 90
+   while True:
+       # if both buttons are pressed, run calibration code
+       if microbit.button_a.is_pressed() and microbit.button_b.is_pressed():
+           left, right = read_sensor(LINE_SENSOR, BOTH)
+           microbit.display.scroll(left)
+           microbit.display.scroll(right)
+       # if button A is pressed run line following code until button B gets pressed
+       # or until we're over white/background
+       if microbit.button_a.is_pressed():
+           while not microbit.button_b.is_pressed():
+               left, right = read_sensor(LINE_SENSOR, BOTH)
+               if left < threshold and right < threshold:
+                   # both sensors detect the line
+                   strip[2]=(0,255,0)
+                   strip[8]=(0,255,0)
+                   strip.show()
+                   drive(FORWARD)
+               elif right > threshold and left > threshold:
+                   # neither sensor detects the line
+                   stop()
+                   strip[2]=(255,0,0)
+                   strip[8]=(255,0,0)
+                   strip.show()
+                   break
+               elif left > threshold and right < threshold:
+                  # only the right sensor detects the line
+                   strip[2]=(0,255,0)
+                   strip[8]=(0,0,0)
+                   strip.show()
+                   turn(RIGHT)
+               elif right > threshold and left < threshold:
+                   # only the left sensor detects the line
+                   strip[2]=(0,0,0)
+                   strip[8]=(0,255,0)
+                   strip.show()
+                   turn(LEFT)
+               microbit.sleep(50)
+           stop()

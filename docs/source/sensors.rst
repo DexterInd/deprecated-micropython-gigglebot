@@ -3,8 +3,8 @@ Sensors tutorial
 
 The GiggleBot comes with a couple of onboard sensors:
 
-#. two light sensors, near the front eyes LEDs,
-#. two line sensors, on the underside of the line follower.
+#. Two light sensors, near the front eyes LEDs.
+#. Two line sensors, on the underside of the line follower.
 
 Light Sensors
 -------------
@@ -37,19 +37,19 @@ your GiggleBot by using a flashlight.
 
 This is how to use this project:
 
-#. start GiggleBot and wait for sleepy face to appear on the Micro:Bit,
-#. press button A to start the Chase the Light game (heart will replace the sleepy face),
-#. chase the light as long as you want,
-#. press button B to stop the GiggleBot and display sleepy face again.
+#. Start GiggleBot and wait for sleepy face to appear on the Micro:Bit.
+#. Press button A to start the Chase the Light game (heart will replace the sleepy face).
+#. Chase the light as long as you want.
+#. Press button B to stop the GiggleBot and display sleepy face again.
 
 First, a bit of explanation on the algorithm being used here.
 
 On starting the GiggleBot, the Micro:Bit will:
 
-#. assign a value to the `diff` variable (here it is using 10),
-#. display a sleepy face image,
-#. resets whatever readings from the buttons it might have had, 
-#. then start a forever loop.
+#. Assign a value to the `diff` variable (here it is using 10).
+#. Display a sleepy face image.
+#. Resets whatever readings from the buttons it might have had.
+#. Start a forever loop.
 
 This forever loop only waits for one thing: 
 for the user to press button A, and that's when the light chasing begins.
@@ -59,14 +59,14 @@ quite happy to be active! And then it starts a second forever loop! This second
 forever loop is the actual Light Chasing game. It will end when button B is 
 pressed by the user.
 
-How to chase a light:
+How to Chase a Light:
 
-#. take reading from both light sensors,
-#. compare the readings, using `diff` to allow for small variations. You will most likely get absolutely identical readings, even if the light is mostly equal. Using a differential value helps stabilize the behavior. You can adapt to your own lighting conditions by changing this value.
-#. if the right sensor reads more than the left sensor plus the `diff` value, then we know it's brighter to the right. Turn right.
-#. if the left sensor reads more than the right sensor plus the `diff` value, then it's brighter to the left. Turn left.
-#. if there isn't that much of a difference between the two sensors, go straight. 
-#. if button B gets pressed at any time, stop the robot, change sleepy face, and get out of this internal loop. The code will fall back to the first loop, ready for another game.
+#. Take reading from both light sensors.
+#. Compare the readings, using `diff` to allow for small variations. You will most likely get absolutely identical readings, even if the light is mostly equal. Using a differential value helps stabilize the behavior. You can adapt to your own lighting conditions by changing this value.
+#. If the right sensor reads more than the left sensor plus the `diff` value, then we know it's brighter to the right. Turn right.
+#. If the left sensor reads more than the right sensor plus the `diff` value, then it's brighter to the left. Turn left.
+#. If there isn't that much of a difference between the two sensors, go straight. 
+#. If button B gets pressed at any time, stop the robot, change sleepy face, and get out of this internal loop. The code will fall back to the first loop, ready for another game.
 
 
 
@@ -132,9 +132,18 @@ It contains two line sensors. You can spot them from the top of the line
 follower by two white dots. And from the bottom, they are identified as *R* and 
 *L* (for *right* and *left*)
 
+.. figure::  _static/images/GigglebotLineFollowingSensors.jpg
+   :align:   center
+   :alt: sensors underneath the line follower
+
+*photo courtesy of Les Pounder*
+
+
 The easiest way of reading the sensors is as follow:
 
-.. code:
+.. code::
+
+   from gigglebot import *
    left, right = read_sensor(LINE_SENSOR, BOTH)
 
 The lower the number, the darker it is reading. Values can go from 0 to 1023 
@@ -142,7 +151,7 @@ and depend a lot on your environment. If you want to write a line follower
 robot, it is best to take a few readings first, to get a good idea of what
 numbers will represent a black line, and what numbers represent a white line.
 
-Calibrating the line follower
+Calibrating the Line Follower
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Calibrating the line follower means figuring out which numbers get returned
@@ -156,11 +165,11 @@ The following code will display the values onto the microbit leds when you
 press button A, allowing you to manually position your robot around your 
 circuit and take readings.
 
-.. code:
+.. code::
+
    from gigglebot import *
    # reset all previous readings of button_a
-   # strictly speaking this is not necessary 
-   # it is just a safety thing
+   # strictly speaking this is not necessary, it is just a safety thing
    microbit.button_a.was_pressed()
    while True:
        if microbit.button_a.is_pressed():
@@ -180,20 +189,25 @@ in other words, if both sensors detect they're over the background color.
 
 The logic will be as follow:
 
-#. if both sensors detect a black line, forge straight ahead.
-#. if neither sensor detects a black line, give up and stop.
-#. if the right sensor detects a black line but not the left sensor, then steer to the right.
-#. if the left sensor detects a black line but not the right sensor, then steer to the left.
+#. If both sensors detect a black line, forge straight ahead.
+#. If neither sensor detects a black line, give up and stop.
+#. If the right sensor detects a black line but not the left sensor, then steer to the right.
+#. If the left sensor detects a black line but not the right sensor, then steer to the left.
 
-.. code:
+We are also using the LEDs on the LED smile to indicate what is going on while
+we follow the line. 
+
+.. code::
+
    from gigglebot import *
-   # reset all previous readings of button_a
-   # strictly speaking this is not necessary 
-   # it is just a safety thing
+   # reset all previous readings of button_a, and button_b
+   # strictly speaking this is not necessary, it is just a safety thing
    microbit.button_a.was_pressed()
+   microbit.buttom_b.was_pressed()
    microbit.display.show(microbit.Image.YES)
    strip=init()
-   # speed needs to be set according to your line and battery level
+   # speed needs to be set according to your line and battery level.
+   # do not go too fast though. 
    set_speed(60, 60)
    # threshold is a little over the highest number you got that indicates a 
    # black line.
@@ -234,5 +248,4 @@ The logic will be as follow:
                    strip[8]=(0,255,0)
                    strip.show()
                    turn(LEFT)
-               microbit.sleep(50)
            stop()

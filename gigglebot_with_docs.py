@@ -21,9 +21,9 @@ motor_power_right = 50
 neopixelstrip = None
 
 #: I2C command to read the line sensors.
-GET_LINE_SENSORS = 5
+LINE_SENSOR = 5
 #: I2C command to read the light sensors.
-GET_LIGHT_SENSORS = 6
+LIGHT_SENSOR = 6
 #: I2C command to query voltage level of the battery.
 _GET_VOLTAGE_BATTERY = 4
 #: I2C command to write new power values to the motor.
@@ -119,9 +119,9 @@ def set_smile(R=25,G=0,B=0):
     """
     Controls the color of the smile neopixels, all together. 
 
-    :param int R = 25: the red component of the color, from 0 to 254
-    :param int G =  0: the green component of the color, from 0 to 254
-    :param int B =  0: the blue component of the color, from 0 to 254
+    :param int R = 25: Red component of the color, from 0 to 254.
+    :param int G =  0: Green component of the color, from 0 to 254.
+    :param int B =  0: Blue component of the color, from 0 to 254.
     
     """
     neopix = range(2,9)
@@ -132,10 +132,10 @@ def set_eyes(which=BOTH, R=0, G=0, B=10):
     """
     Controls the color of the two eyes, each one individually or both together.
 
-    :param int which = BOTH: either LEFT (0), RIGHT (1), or BOTH (2)
-    :param int R =  0: the red component of the color, from 0 to 254
-    :param int G =  0: the green component of the color, from 0 to 254
-    :param int B = 10: the blue component of the color, from 0 to 254
+    :param int which = BOTH: either LEFT (0), RIGHT (1), or BOTH (2).
+    :param int R =  0: Red component of the color, from 0 to 254.
+    :param int G =  0: Green component of the color, from 0 to 254.
+    :param int B = 10: Blue component of the color, from 0 to 254.
     """
     if which != LEFT: neopixelstrip[0]=(R,G,B)
     if which != RIGHT: neopixelstrip[1]=(R,G,B)
@@ -165,7 +165,7 @@ def pixels_off():
 
 def set_servo(which=LEFT, degrees=90):
     """
-    :param int which: Which servo to control: LEFT (0),  RIGHT (1), or BOTH (2)
+    :param int which: Which servo to control: LEFT (0),  RIGHT (1), or BOTH (2).
     :param int degrees: Position of the servo, from 0 to 180. 
 
     .. note::
@@ -197,7 +197,7 @@ def servo_off(which):
     """
     Removes power from the servo.
 
-    :param int which: determines which servo, LEFT (0), RIGHT (1), BOTH (2)
+    :param int which: Determines which servo, LEFT (0), RIGHT (1), BOTH (2).
     """
     if which == LEFT or which == BOTH: microbit.pin14.write_digital(0)
     if which == RIGHT or which == BOTH: microbit.pin13.write_digital(0)
@@ -207,15 +207,22 @@ def read_sensor(which_sensor, which_side):
     """
     Reads the GiggleBot onboard sensors, light or line sensors.
 
-    :param int which_sensor: reads the light sensors GET_LIGHT_SENSORS (6), or the line sensors GET_LINE_SENSORS (5). Values are from 0 to 1023.
-    :param int which_side: reads LEFT (0), RIGHT (1), or BOTH (2) sensors. When reading both sensors, an array will be returned.
+    :param int which_sensor: Reads the light sensors LIGHT_SENSOR (6), or the line sensors LINE_SENSOR (5). Values are from 0 to 1023.
+    :param int which_side: Reads LEFT (0), RIGHT (1), or BOTH (2) sensors. When reading both sensors, an array will be returned.
 
-    :returns: either an integer or an array of integers.
+    :returns: either an integer or an array of integers (left, then right)
+
+    You can read the sensors this way:
+
+    .. code::
+
+       left, right = read_sensor(LIGHT_SENSOR, BOTH)
 
     """
-    if (which_side == LEFT): return _get_sensors(which_sensor)[0]
-    elif (which_side == RIGHT): return _get_sensors(which_sensor)[1]
-    else: return _get_sensors(which_sensor)
+    right, left = _get_sensors(which_sensor)
+    if(which_side==LEFT): return left
+    elif(which_side==RIGHT): return right
+    else: return (left, right)
 
 
 def volt():

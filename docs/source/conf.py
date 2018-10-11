@@ -176,7 +176,7 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
     (master_doc, 'GigglebotMicropythonLibrary', 'Gigglebot Micropython Library Documentation',
-     author, 'GigglebotMicropythonLibrary', 'One line description of project.',
+     author, 'GigglebotMicropythonLibrary', 'Gigglebot Microbit Robot.',
      'Miscellaneous'),
 ]
 
